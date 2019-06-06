@@ -1,45 +1,62 @@
 # NOTE : we can not use grid and pack layout manager at the same time.
 #        To use them together use the frame
 from tkinter import *
+from tkinter import ttk
 import os
 from pygame import mixer
 from tkinter import filedialog
 import tkinter.messagebox
+from mutagen.mp3 import MP3
 
 # for user defined exception
 
-global seven
+global check
 
-seven=7
-print(seven)
-
+paused = FALSE
+muted = FALSE
 # user defined exception ends
-def play_btn():
-    try: # checking  is paused variable is initialised
-        print('play button') #
-        print('hello')
-        if seven > 0:
-            print(seven)
-            throw
-                
-    except:
+
+def show_details(): # show details
+    global filename
+    print('show ')
+    filelabel['text'] = 'Playing'+' - '+os.path.basename(filename)
+    file_data = os.path.splitext(filename)
+    print(filename)
+    print(file_data)
+    if file_data[1] == '.mp3':
+        audio = MP3(filename)
+        totallength = audio.info.length
+        print(totallength)
+    else:    
+        a = mixer.sound(filename)  #use sound for wav file provided by mixer
+        print('.wav file')
+  # FOR wav file , not for mp3
+        totallength = a.get_length() # this include pause time also ERROR
+        
+    mins,secs = divmod(totallength,60) # storing quotient in mins and remainder in secs
+    print(round(mins))
+    print(round(secs))
+    #time_format = '{:2d}:{:2d}'.format(mins, secs)  #02d: show 0(optional) +2 digits + d:int
+    #print(time_format)
+    lengthlabel['text']= 'Total Length' + ' - '+ str(round(mins)) + ':' +str(round(secs))
+        
+        
+def play_btn():                                                                                                 # PLAY BUTTON
+    global paused
+    if paused:
+        mixer.music.unpause()
+        statusbar['text']='Music Resumed'
+        paused = FALSE
+    else:    
         try:
-            print('except') # 
             mixer.music.load(filename)
-            print('filename')#
             mixer.music.play()
-            statusbar['text']='Playing '+os.path.basename(filename)
+            statusbar['text']='NOW :'+os.path.basename(filename)
+            show_details()
         except:
-            print('exceptit')#
             tkinter.messagebox.showerror('FILE NOT FOUND',' WE COULD NOT FETCH THE FILE. PLEASE SHOW THE DIRECTORY')
             print('ERROR: WE COULD NOT FETCH')
                     
-    else: # executes after  try if except does not execute
-        mixer.music.unpause()
-        print('unpause') #
-        check = False
-        statusbar['text']='Music Resumed'
-
 def stop_btn():
     mixer.music.stop()
     statusbar['text']='WELCOME TO PLAY NOW'
@@ -56,47 +73,43 @@ def browse_file():
     filename = filedialog.askopenfilename()
             
 def pause_btn():
-    global check
+    global paused
     print('pause button')
-    # get_busy()
-    print(seven)
-    seven = 0
-    print(seven)
-    check = True
+    paused = TRUE
     mixer.music.pause()
     statusbar['text']='Music Paused'
+    print('pausee')
 
 
 def muteAndvolume_btn():
-    global muted       
+    global muted
+    
     if muted:
         mixer.music.set_volume(70)
         volume_btn.configure(image=volume_photo)
         scale.set(70)
-        muted = False
+        muted = FALSE
             
     else:
                 
         mixer.music.set_volume(0)
         volume_btn.configure(image=mute_photo)
         scale.set(0)
-        muted=True
-
+        muted=TRUE
 
 def rewind_btn():
-            
     play_btn()
     statusbar['text']='Music Played'
-            
-root= Tk()
 
+root=Tk()
+root.config(background='plum3')
 # CREATE FRAME
 
 middleframe = Frame(root ) #Frame(root,relief= RAISED, borderwidth=1)
 middleframe.pack(padx=10,pady=10)
 
 bottomframe = Frame(root) #Frame(root,relief= RAISED, borderwidth=1)
-bottomframe.pack()
+bottomframe.pack(padx=20,pady=30)
 
 # CREATE MENUBAR
 menubar = Menu(root)
@@ -126,40 +139,46 @@ root.title('PLAY NOW')
 
 # SET ICON FOR APP
 root.iconbitmap('icon.ico')
-text= Label(root,text='Lets, Play It Now !')
-text.pack(pady=10) # packing and adding padding
+
+# file label showing the length and the music being played
+filelabel = Label(root,text='Lets, Play It Now !')
+filelabel.pack(pady=10) # packing and adding padding
+
+# length label
+lengthlabel = Label(root,text='Length : --:-- ')
+lengthlabel.pack() # packing and adding padding
 
 # PLAY BUTTON
 play_photo = PhotoImage(file='play.png')
-play_btn = Button(middleframe, text="Play",command=play_btn,image=play_photo)
-play_btn.pack(side = LEFT,padx=5)
+playmusic_btn = Button(middleframe, text="Play",command=play_btn,image=play_photo)
+playmusic_btn.pack(side = LEFT,padx=5)
 
 # STOP BUTTON
 stop_photo = PhotoImage(file='stop.png')
-stop_btn = Button(middleframe, text="Stop",command=stop_btn,image=stop_photo)
-stop_btn.pack(side=LEFT,padx=5)
+stopmusic_btn = Button(middleframe, text="Stop",command=stop_btn,image=stop_photo)
+stopmusic_btn.pack(side=LEFT,padx=5)
 
 # PAUSE BUTTON
 pause_photo = PhotoImage(file='pause.png')
-pause_btn = Button(middleframe, text="Pause",command=pause_btn,image =pause_photo)
-pause_btn.pack(side=LEFT,padx=5)
+pausemusic_btn = Button(middleframe, text="Pause",command=pause_btn,image =pause_photo)
+pausemusic_btn.pack(side=LEFT,padx=5)
 
-# mute and volume button
+# mute and volume button 
 mute_photo = PhotoImage(file='mute.png')
 volume_photo = PhotoImage(file='volume.png')
-volume_btn = Button(middleframe, text="",command=muteAndvolume_btn,image =volume_photo)
+volume_btn = Button(middleframe,command=muteAndvolume_btn,image=volume_photo)
 volume_btn.pack(side=LEFT,padx=5)
 
 # REWIND
 rewind_photo = PhotoImage(file='rewind.png')
-rewind_btn = Button(bottomframe,command=rewind_btn,image =rewind_photo)
-rewind_btn.grid(row =0,column=1,padx=5)  # NOTE : used grid instead of pack
+rewindmusic_btn = Button(bottomframe,image=rewind_photo,command=rewind_btn)
+rewindmusic_btn.grid(row=0,column=0)  # NOTE : used grid instead of pack
 
 #CONTROL VOLUME
-scale = Scale(root,from_=0, to=100 , orient=HORIZONTAL , command=set_vol)
+scale = Scale(bottomframe,from_=0, to=100 , orient=HORIZONTAL , command=set_vol)
 scale.set(70)
 mixer.music.set_volume(0.7)
-scale.pack(pady=17)
+scale.grid(pady=12,padx=30,row=0,column=1)
 
 # STATUS BAR
 
