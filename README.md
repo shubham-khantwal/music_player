@@ -11,7 +11,7 @@ now play your favourite music at any time.
  . os
  . mutagen
  
- [image](https://github.com/shubham-khantwal/music_player/blob/master/update2.PNG)
+ [!image](https://github.com/shubham-khantwal/music_player/blob/master/update2.PNG)
  
  # CODE
  [code](https://github.com/shubham-khantwal/music_player/blob/master/Main.py)
